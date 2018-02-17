@@ -5,36 +5,9 @@ import math
 start_time = time.clock()
 searchType = sys.argv[1]
 grid = sys.argv[2].split(",")
+rowLen = int(math.sqrt(len(grid)))
 
-def swapPos(zeroPos, newPos, boardList):
-		tempList = list(boardList)
-		tempElement = tempList[zeroPos]
-		tempList[zeroPos] = tempList[newPos]
-		tempList[newPos] = tempElement
-		return tempList
-	
-def moveList(boardList, zeroPos):
-	#given list, produce list of acceptible lists
-	rowLen = int(math.sqrt(len(boardList)))
-	column = int(zeroPos % rowLen)
-	boards = []
-	#up
-	if(zeroPos > rowLen - 1):
-		newPos = zeroPos - rowLen
-		boards.append(swapPos(zeroPos, newPos, boardList))
-	#down
-	if(zeroPos < len(boardList) - 1):
-		newPos = zeroPos + rowLen
-		boards.append(swapPos(zeroPos, newPos, boardList))
-	#left
-	if(column > 0):
-		newPos = zeroPos - 1
-		boards.append(swapPos(zeroPos, newPos, boardList))
-	#right
-	if(column < rowLen - 1):
-		newPos = zeroPos + 1
-		boards.append(swapPos(zeroPos, newPos, boardList))
-	return boards
+
 
 class BoardState:
 	pathList = []
@@ -44,6 +17,8 @@ class BoardState:
 	def __init__(self, boardList):
 		self.parent = None
 		self.child = boardList
+		self.ID = ''.join(boardList)
+		self.zeroPos = boardList.index(0)
 		
 class nodeQueue:
 	queue = []
@@ -55,10 +30,61 @@ class nodeQueue:
 	def remove(self):
 		self.elements.discard(0)
 		return self.queue.pop(0)
+	
+	def isEmpty(self):
+		return len(self.queue) < 1
 		
 class solver:
-	ds = []
-
+	
+	def swapPos(self, zeroPos, newPos, state):
+		tempList = list(state.child)
+		tempElement = tempList[zeroPos]
+		tempList[zeroPos] = tempList[newPos]
+		tempList[newPos] = tempElement
+		state2 = BoardState(tempList)
+		state.zeroPos = newPos
+		return state2
+	
+	def moveList(self, state, zeroPos):
+		#given list, produce list of acceptible lists
+		boardList = state.child
+		column = int(zeroPos % rowLen)
+		states = []
+		#up
+		if(zeroPos > rowLen - 1):
+			newPos = zeroPos - rowLen
+			states.append(self.swapPos(zeroPos, newPos, state))
+		#down
+		if(zeroPos < len(boardList) - 1):
+			newPos = zeroPos + rowLen
+			states.append(self.swapPos(zeroPos, newPos, state))
+		#left
+		if(column > 0):
+			newPos = zeroPos - 1
+			states.append(self.swapPos(zeroPos, newPos, state))
+		#right
+		if(column < rowLen - 1):
+			newPos = zeroPos + 1
+			states.append(self.swapPos(zeroPos, newPos, state))
+		return states
+	
+	def main(self):
+		frontier = nodeQueue()
+		explored = set([])
+		while not frontier.isEmpty():
+			state = frontier.remove()
+			explored.add(state)
+			
+			if self.goalTest(state):
+				return self.success(State)
+				
+			children = self.moveList(state[0], state[1]) # board and 0 position
+			for child in children:
+				if child not in frontier:
+					if child not in explored:
+						frontier.add(child)
+		return fail()
+	
 def main():
 	print ("searchtype: ", searchType)
 	firstState = BoardState(grid)
