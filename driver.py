@@ -87,8 +87,8 @@ class Solver:
 			if state.ID == "012345678":
 				print "A winner is you!"
 				directions = []
-				while state.parent is not None:
-					print(state.parent.ID)
+				while state is not None:
+					print(state.ID)
 					directions.append(state.direction)
 					state = state.parent
 				print directions
