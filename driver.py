@@ -10,10 +10,7 @@ rowLen = int(math.sqrt(len(grid)))
 
 
 class BoardState:
-	pathList = []
 	pathCost = 0
-	addX = 0
-
 	def __init__(self, boardList):
 		self.parent = None
 		self.direction = None
@@ -47,7 +44,7 @@ class Solver:
 		state2 = BoardState(tempList)
 		state2.zeroPos = newPos
 		state2.parent = state
-		state.direction = direction
+		state2.direction = direction
 		return state2
 	
 	def moveList(self, state):
@@ -89,7 +86,7 @@ class Solver:
 				directions = []
 				while state is not None:
 					print(state.ID)
-					directions.append(state.direction)
+					directions.insert(0,state.direction)
 					state = state.parent
 				print directions
 				return 1
