@@ -1,6 +1,7 @@
 import sys
 import time
 import math
+import heapq
 
 start_time = time.clock()
 searchType = sys.argv[1]
@@ -22,7 +23,43 @@ class BoardState:
 		self.ID = ''.join(boardList)
 		self.zeroPos = boardList.index("0")
 
+class nodeHeap:
+	goal = []
+	for i in range (0, elementCount):
+		goal.append(i)
 		
+	heap = []
+	elements = set([])
+	
+	def findDistance(self, state):
+		distance = 0
+		for i in range (0, elementCount):
+			distance += abs(self.goal[i] - int(state.child[i]))
+		return distance
+	
+	def add(self, x):
+		fn = self.findDistance(x) + x.pathCost
+		directionBonus = 0
+		if x.direction == None:
+			directionBonus = 0
+		elif x.direction == "up":
+			directionBonus = 1
+		elif x.direction == "down":
+			directionBonus = 2
+		elif x.direction == "left":
+			directionBonus = 3
+		elif x.direction == "right":
+			directionBonus = 4
+		heapq.heappush(self.heap, (fn*10 + directionBonus, x))
+		self.elements.add(x.ID)
+	def remove(self):
+		item = heapq.heappop(self.heap)
+		self.elements.discard(item[1].ID)
+		return item[1]
+		
+	def isEmpty(self):
+		return len(self.heap) < 1
+	
 class nodeQueue:
 	queue = []
 	elements = set([])
@@ -111,7 +148,7 @@ class Solver:
 		elif searchType == "dfs":
 			frontier = nodeStack()
 		else:
-			return -1
+			frontier = nodeHeap()
 		frontierSet = set([])
 		initState = BoardState(grid)
 		frontier.add(initState)
@@ -125,20 +162,20 @@ class Solver:
 			frontierSet.remove(state.ID)
 			explored.add(state.ID)
 			# self.printState(state)
-			
-			#need to change
 			if state.ID == correctString:
-				print "A winner is you!"
-				print("path cost ", state.pathCost)
-				print("max cost ", maxCost)
-				print("expand Count ", expandCount)
+				cost_of_path = state.pathCost
+				nodes_expanded = expandCount
+				search_depth = state.pathCost
+				max_search_depth = maxCost
 				directions = []
-				while state is not None:
-					print(state.ID)
+				while state.parent is not None:
 					directions.insert(0,state.direction)
 					state = state.parent
-				print directions
-
+				print ("path_to_goal: ", directions)
+				print("cost_of_path: ", cost_of_path)
+				print("nodes_expanded: ", nodes_expanded)
+				print("search_depth: ", search_depth)
+				print("max_search_depth ", max_search_depth)
 				return 1
 				
 			children = self.moveList(state) # board and 0 position
@@ -150,35 +187,22 @@ class Solver:
 					if child.ID not in explored:
 						frontier.add(child)
 						frontierSet.add(child.ID)
-						
-		print "Nice try"
 		return 0
 	
 def main():
-	print ("searchtype: ", searchType)
 	firstState = BoardState(grid)
-
 	s = Solver()
-	print correctString
 	s.main()
-		
-	# boardList = moveList(grid, 1)
-	# for board in boardList:
-	# 	for i in range (0,9):
-	# 		print(board[i]),
-	# 		if((i + 1) % 3 == 0):
-	# 			print "\n"
-	# 	print "\n done \n"
-
+	
 if __name__ == "__main__":
 	main()
-	print time.clock() - start_time
+	print ("running_time: ", time.clock() - start_time)
 	if sys.platform == "win32":
 		import psutil
-		print("psutil", psutil.Process().memory_info().rss)
+		print("max_ram_usage: ", psutil.Process().memory_info().rss)
 	else:
 	# Note: if you execute Python from cygwin,
 	# the sys.platform is "cygwin"
 	# the grading system's sys.platform is "linux2"
 		import resource
-		print("resource", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+		print("max_ram_usage: ", resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
