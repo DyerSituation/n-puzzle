@@ -34,7 +34,18 @@ class nodeQueue:
 	def isEmpty(self):
 		return len(self.queue) < 1
 		
+		
+
 class Solver:
+	
+	def printState(self, state):
+		board = state.child
+		print "board start"
+		for i in range (0, len(board)):
+			print(board[i]),
+			if((i + 1) % 3 == 0):
+				print "\n"
+		print "board end"
 	
 	def swapPos(self, zeroPos, newPos, state, direction):
 		tempList = list(state.child)
@@ -45,6 +56,7 @@ class Solver:
 		state2.zeroPos = newPos
 		state2.parent = state
 		state2.direction = direction
+		state2.pathCost = state.pathCost + 1
 		return state2
 	
 	def moveList(self, state):
@@ -73,29 +85,44 @@ class Solver:
 	
 	def main(self):
 		frontier = nodeQueue()
+		frontierSet = set([])
 		initState = BoardState(grid)
 		frontier.add(initState)
+		frontierSet.add(initState.ID)
 		explored = set([])
+		explored.add(initState.ID)
 		path = []
+		maxCost = 0
+		expandCount = 0
 		while not frontier.isEmpty():
 			state = frontier.remove()
-			explored.add(state)
-			
+			frontierSet.remove(state.ID)
+			explored.add(state.ID)
+			self.printState(state)
+			if state.pathCost > maxCost:
+				maxCost = state.pathCost
 			if state.ID == "012345678":
 				print "A winner is you!"
+				print("path cost ", state.pathCost)
+				print("max cost ", maxCost)
+				print("expand Count ", expandCount)
 				directions = []
 				while state is not None:
 					print(state.ID)
 					directions.insert(0,state.direction)
 					state = state.parent
 				print directions
+
 				return 1
 				
 			children = self.moveList(state) # board and 0 position
+			expandCount += 1
 			for child in children:
-				if child not in frontier.elements:
-					if child not in explored:
+				if child.ID not in frontier.elements:
+					if child.ID not in explored:
 						frontier.add(child)
+						frontierSet.add(child.ID)
+						
 		print "Nice try"
 		return 0
 	
