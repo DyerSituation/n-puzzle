@@ -6,6 +6,10 @@ start_time = time.clock()
 searchType = sys.argv[1]
 grid = sys.argv[2].split(",")
 rowLen = int(math.sqrt(len(grid)))
+elementCount = len(grid)
+correctString = ''
+for i in range (0, elementCount):
+	correctString += `i`
 
 
 
@@ -28,11 +32,26 @@ class nodeQueue:
 		
 	def remove(self):
 		item = self.queue.pop(0)
-		self.elements.discard(item)
+		self.elements.discard(item.ID)
 		return item
 	
 	def isEmpty(self):
 		return len(self.queue) < 1
+		
+class nodeStack:
+	stack = []
+	elements = set([])
+	def add(self, x):
+		self.stack.append(x)
+		self.elements.add(x.ID)
+		
+	def remove(self):
+		item = self.stack.pop()
+		self.elements.discard(item.ID)
+		return item
+	
+	def isEmpty(self):
+		return len(self.stack) < 1
 		
 		
 
@@ -81,16 +100,23 @@ class Solver:
 		if(column < rowLen - 1):
 			newPos = zeroPos + 1
 			states.append(self.swapPos(zeroPos, newPos, state, "right"))
-		return states
+		if searchType == "dfs":
+			return reversed(states)
+		else:
+			return states
 	
 	def main(self):
-		frontier = nodeQueue()
+		if searchType == "bfs":
+			frontier = nodeQueue()
+		elif searchType == "dfs":
+			frontier = nodeStack()
+		else:
+			return -1
 		frontierSet = set([])
 		initState = BoardState(grid)
 		frontier.add(initState)
 		frontierSet.add(initState.ID)
 		explored = set([])
-		explored.add(initState.ID)
 		path = []
 		maxCost = 0
 		expandCount = 0
@@ -98,10 +124,10 @@ class Solver:
 			state = frontier.remove()
 			frontierSet.remove(state.ID)
 			explored.add(state.ID)
-			self.printState(state)
-			if state.pathCost > maxCost:
-				maxCost = state.pathCost
-			if state.ID == "012345678":
+			# self.printState(state)
+			
+			#need to change
+			if state.ID == correctString:
 				print "A winner is you!"
 				print("path cost ", state.pathCost)
 				print("max cost ", maxCost)
@@ -117,6 +143,8 @@ class Solver:
 				
 			children = self.moveList(state) # board and 0 position
 			expandCount += 1
+			if state.pathCost + 1 > maxCost:
+				maxCost = state.pathCost + 1
 			for child in children:
 				if child.ID not in frontier.elements:
 					if child.ID not in explored:
@@ -131,6 +159,7 @@ def main():
 	firstState = BoardState(grid)
 
 	s = Solver()
+	print correctString
 	s.main()
 		
 	# boardList = moveList(grid, 1)
